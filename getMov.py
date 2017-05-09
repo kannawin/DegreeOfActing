@@ -3,11 +3,14 @@ import requests
 import json
 import urllib
 import httplib
-
+from cassandra.cluster import Cluster
 
 year = 1995
 search = 'The Shawshank Redemption'
 api = '97e4335bd73002b6731fc902f3748e96'
+
+cluster = Cluster()
+session = cluster.connect("actors")
 
 
 for m in range(1,4000):
@@ -33,7 +36,12 @@ for m in range(1,4000):
 		for i in result['cast']:
 			films.append(i['id'])
 			media.append(i['media_type'])
+#		print json.dumps(films)
+		if len(films) > 0:
+			session.execute(""" INSERT INTO actors.actor (aid, movies, media) VALUES (%s,%s,%s)""",(m, films, media))
 
-		print len(films)
+#			print mediatype
+			print films
+#			print "\n\n"			
 
-	
+print "success!"
